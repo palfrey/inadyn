@@ -31,9 +31,6 @@
 
 static int curr_info;
 
-/* command line options */
-#define DYNDNS_INPUT_FILE_OPT_STRING "--input_file"
-
 static RC_TYPE help_handler(CMD_DATA *p_cmd, int current_nr, void *p_context);
 static RC_TYPE wildcard_handler(CMD_DATA *p_cmd, int current_nr, void *p_context);
 static RC_TYPE get_username_handler(CMD_DATA *p_cmd, int current_nr, void *p_context);
@@ -1000,23 +997,85 @@ RC_TYPE get_config_data(DYN_DNS_CLIENT *p_self, int argc, char** argv)
 {
 	int i;
 	RC_TYPE rc = RC_OK;
+	struct option long_options[] = {
+		{"alias", 1, 0, 'a'},
+
+		{"background", 0, 0, 'b'},
+
+		{"iface", 1, 0, 'i'},
+		{"bind_interface", 1, 0, 'i'}, /* old compat */
+
+		{"config", 1, 0, 'F'},
+		{"input_file", 1, 0, 'F'}, /* old compat */
+
+		{"drop-privs", 1, 0, 'U'},
+		{"change_persona", 1, 0, 'U'}, /* old compat */
+
+		{"exec", 1, 0, 'e'},
+
+		/* Forced update interval, defaults to 1 week. */
+		{"force-update", 1, 0, 'f'},
+		{"force_update_period", 1, 0, 'f'}, /* sec, old compat */
+
+		{"help", 0, 0, 'h'},
+
+		{"iterations",  0, 0, 'n'},
+
+		/* Defaults to: 'checkip.dyndns.org:80 /' */
+		{"host-url"        1, 0, 'H'},
+		{"ip_server_name", 1, 0, 'H'}, /* old compat */
+
+		{"server-name", 1, 0, 'N'},
+		{"ddns-server-name", 1, 0, 'N'},
+		{"dyndns_server_name", 1, 0, 'N'}, /* old compat */
+
+		{"server-url", 1, 0, 'U'},
+		{"ddns-server-url", 1, 0, 'U'},
+		{"dyndns_server_url", 1, 0, 'U'}, /* old compat */
+
+		{"system", 1, 0, 'S'},
+		{"ddns-system", 1, 0, 'S'},
+		{"dyndns_system", 1, 0, 'S'}, /* old compat */
+
+		{"logfile", 1, 0, 'L'},
+		{"log-file", 1, 0, 'L'}, /* compat */
+		{"log_file", 1, 0, 'L'}, /* compat */
+
+		{"password", 1, 0, 'p'},
+
+		{"pidfile", 1, 0, 'P'},
+		{"pid-file", 1, 0, 'P'}, /* compat */
+		{"pid_file", 1, 0, 'P'}, /* compat */
+
+		{"proxy-server", 1, 0, 'x'},
+		{"proxy_server", 1, 0, 'x'}, /* old compat */
+
+		{"syslog", 0, 0, 's'},
+
+		/* Periodic checkip interval, defaults to 30 sec. */
+		{"period", 1, 0, 'T'},		  /* sec */
+		{"update-period", 1, 0, 'T'},	  /* sec */
+		{"update_period_sec", 1, 0, 'T'}, /* sec */
+		{"update_period", 1, 0, 'T'},	  /* msec, old compat */
+
+		{"username", 1, 0, 'u'},
+
+		{"verbose", 2, 0, 'V'},
+
+		{"version", 0, 0, 'v'},
+
+		{"wildcard", 0, 0, 'w'},
+
+		{0, 0, 0, 0}
+	};
 
 	do
 	{
-		/*load default data */
+		/* load default data */
 		rc = get_default_config_data(p_self);
 		if (rc != RC_OK)
 		{
 			break;
-		}
-		/*set up the context pointers */
-		{
-			CMD_DESCRIPTION_TYPE *it = cmd_options_table;
-			while (it->p_option != NULL)
-			{
-				it->p_handler.p_context = (void*) p_self;
-				++it;
-			}
 		}
 
 		/* in case of no options, assume the default cfg file may be present */
